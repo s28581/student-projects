@@ -13,31 +13,35 @@ public class KMeans {
         ArrayList<Point> data = readFile("src/test.csv");
         for (int i = 0; i < k; i++) {
             centroids[i] = new Centroid(data.getFirst().coords.length);
-        }for (int i = 0; i < centroids.length; i++) {
-            centroids[i].calculateNewCentroidCoords(data);
         }
-        for(Point p : data){
+        for (Point p : data) {
             p.giveRandomGroup(centroids);
+        }
+        for (int i = 0; i < centroids.length; i++) {
+            centroids[i].calculateNewCentroidCoords(centroids[i], data);
         }
         int i = 0;
         while (Math.abs(oldE - e) > 0.00001) {
-            for(Point p : data){
+
+
+            for (Point p : data) {
                 p.calculateNearestCentroid(centroids);
             }
-            for(Centroid c : centroids){
-                c.calculateNewCentroidCoords(data);
+            for (Centroid c : centroids) {
+                c.calculateNewCentroidCoords(c,data);
             }
             oldE = e;
             e = calculateE(data);
-            System.out.println(i++);
+            System.out.print(i++);
+            System.out.println(": " + (oldE - e) + ", " + e);
         }
 
 
     }
 
-    static double calculateE(ArrayList<Point> data){
+    static double calculateE(ArrayList<Point> data) {
         double sum = 0;
-        for(Point p : data){
+        for (Point p : data) {
             sum += Math.pow(p.distanceToNearestCentroid, 2);
         }
         return sum;
