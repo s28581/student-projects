@@ -29,6 +29,7 @@ class Minesweeper:
         self.grid = self.create_grid()
         self.hovered_cell = None
         self.game_over = False
+        self.mines_left = num_mines
 
     def create_grid(self):
         grid = [[FieldButton() for _ in range(self.grid_size)] for _ in range(self.grid_size)]
