@@ -1,9 +1,13 @@
+#Aleksander Polański
+#Kacper Nowakowski
+
 import pygame
 import random
 
 from Button import Button
 from FieldButton import FieldButton
 from InputBox import InputBox
+from Timer import Timer
 
 pygame.init()
 
@@ -23,13 +27,15 @@ class Minesweeper:
         self.height = height
         self.grid_size = grid_size
         self.num_mines = num_mines
-        self.cell_size = min(width // grid_size, height // grid_size)
+        self.cell_size = min((width - 100) // grid_size, height // grid_size)
         self.screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
         pygame.display.set_caption("Saper")
         self.grid = self.create_grid()
         self.hovered_cell = None
         self.game_over = False
         self.mines_left = num_mines
+        self.timer = Timer()
+        self.timer.load_best_time()
 
     def create_grid(self):
         grid = [[FieldButton() for _ in range(self.grid_size)] for _ in range(self.grid_size)]
@@ -115,6 +121,8 @@ class Minesweeper:
             print(f"Error loading game: {e}")
 
     def run(self):
+        self.timer.start()
+        clock = pygame.time.Clock()
         running = True
         while running:
             self.screen.fill(WHITE)
@@ -141,10 +149,21 @@ class Minesweeper:
                     if grid_x < self.grid_size and grid_y < self.grid_size:
                         if event.button == 1:
                             self.reveal_cell(grid_x, grid_y)
+                            if self.grid[grid_y][grid_x].is_mine:
+                                self.game_over = True
+                                self.timer.stop()
                         elif event.button == 3:
                             self.toggle_flag(grid_x, grid_y)
 
+            if not self.game_over:
+                self.timer.update()
+            self.timer.draw(self.screen, self.width - 150)
+            if self.game_over:
+                game_over_text = font.render(f"Koniec Gry! Czas: {self.timer.elapsed_time}s", True, RED)
+                self.screen.blit(game_over_text, (self.width // 2 - game_over_text.get_width() // 2, self.height // 2))
+
             pygame.display.flip()
+            clock.tick(60)
 
         pygame.quit()
 
@@ -182,14 +201,14 @@ def show_menu():
                 for button in buttons:
                     if button.is_clicked(event):
                         if button.text == "Latwy":
-                            return 400, 400, 10, 10
+                            return 700, 400, 10, 10
                         elif button.text == "Sredni":
-                            return 640, 640, 16, 40
+                            return 940, 640, 16, 40
                         elif button.text == "Trudny":
-                            return 800, 800, 20, 80
+                            return 1100, 800, 20, 80
                         elif button.text == "Wlasne":
                             if int(row_length_input.text) ** 2 > int(bombs_amount_input.text):
-                                return (int(row_length_input.text) * 60, int(row_length_input.text) * 60,
+                                return (int(row_length_input.text) * 60 + 100, int(row_length_input.text) * 60,
                                         int(row_length_input.text), int(bombs_amount_input.text))
 
 
@@ -197,7 +216,7 @@ def main():
     game_settings = show_menu()
     if game_settings:
         width, height, grid_size, num_mines = game_settings
-        game = Minesweeper(width + 100, height, grid_size, num_mines)
+        game = Minesweeper(width, height, grid_size, num_mines)
         game.run()
 
 

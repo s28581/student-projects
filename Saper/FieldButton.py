@@ -1,4 +1,3 @@
-
 class FieldButton:
     def __init__(self):
         self.is_mine = False
